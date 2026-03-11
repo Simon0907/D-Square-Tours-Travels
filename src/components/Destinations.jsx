@@ -5,7 +5,7 @@ import "../css/PopularDestinations.css";
 import amazonForest from "../assets/Madurai.jpg";
 import newZealand from "../assets/kanyakumari.jpeg";
 import london from "../assets/Rameshwaram.webp";
-import europe from "../assets/Thiruvanathapuram.webp";
+import europe from "../assets/thiruvanathapuram.webp";
 import africa from "../assets/Kodaikanal.webp";
 
 const PopularDestinations = () => {
