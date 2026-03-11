@@ -27,7 +27,7 @@ const Navbar = () => {
     <>
       {/* Top Contact Bar */}
       <div className="top-contact-bar">
-        <span>📞 +91 95666 26109</span>
+        <span>📞 +91 86808 68173</span>
         <span>✉️ dsquaretourtravles@gmail.com</span>
       </div>
 
