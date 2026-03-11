@@ -63,7 +63,7 @@ const Footer = () => {
 
       {/* BOTTOM BAR */}
       <div style={bottom}>
-        Copyright © 2025 Vismi Cabs. All Rights Reserved.
+        Copyright © 2026 D Square Tours &Travels. All Rights Reserved.
       </div>
     </footer>
   );
