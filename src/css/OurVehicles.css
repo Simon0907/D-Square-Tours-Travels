@@ -1,0 +1,154 @@
+.tariff-packages{
+font-family:'Poppins',sans-serif;
+background:linear-gradient(135deg,#fff7ed,#ffe4c7);
+min-height:100vh;
+padding:60px 20px;
+}
+
+.header-section{
+text-align:center;
+margin-bottom:60px;
+}
+
+.label-line{
+width:40px;
+height:3px;
+background:linear-gradient(90deg,#f97316,#ea580c);
+border-radius:2px;
+}
+
+.label-text{
+color:#f97316;
+font-weight:600;
+letter-spacing:2px;
+text-transform:uppercase;
+}
+
+.main-title{
+font-size:48px;
+font-weight:700;
+background:linear-gradient(135deg,#f97316,#ea580c);
+-webkit-background-clip:text;
+-webkit-text-fill-color:transparent;
+}
+
+.description{
+max-width:900px;
+margin:auto;
+color:#64748b;
+line-height:1.6;
+}
+
+.extra-charges-badge{
+background:linear-gradient(135deg,#f97316,#ea580c);
+color:#fff;
+padding:12px 30px;
+border-radius:50px;
+font-weight:600;
+}
+
+.vehicles-grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+gap:30px;
+max-width:1400px;
+margin:auto;
+}
+
+.vehicle-card{
+background:#fff;
+border-radius:20px;
+overflow:hidden;
+border:3px solid #f97316;
+box-shadow:0 10px 30px rgba(0,0,0,0.1);
+transition:all .4s ease;
+}
+
+.vehicle-card:hover{
+transform:translateY(-10px);
+box-shadow:0 20px 40px rgba(249,115,22,0.35);
+}
+
+.vehicle-image-container{
+height:220px;
+overflow:hidden;
+padding:20px;
+display:flex;
+align-items:center;
+justify-content:center;
+}
+
+.vehicle-image{
+width:100%;
+height:100%;
+object-fit:cover;
+border-radius:10px;
+transition:transform .5s ease;
+}
+
+.vehicle-card:hover .vehicle-image{
+transform:scale(1.1);
+}
+
+.vehicle-name{
+text-align:center;
+font-size:22px;
+color:#f97316;
+font-weight:700;
+margin:20px 0;
+}
+
+.pricing-section{
+padding:0 20px 20px;
+}
+
+.pricing-tier{
+font-weight:700;
+margin:20px 0 10px;
+border-bottom:2px solid #eee;
+padding-bottom:6px;
+}
+
+.price-row{
+display:flex;
+justify-content:space-between;
+margin-bottom:10px;
+}
+
+.price-label{
+color:#64748b;
+}
+
+.price-value{
+font-weight:600;
+}
+
+.book-now-btn{
+width:calc(100% - 40px);
+margin:20px;
+padding:14px;
+background:linear-gradient(135deg,#f97316,#ea580c);
+border:none;
+border-radius:10px;
+color:#fff;
+font-weight:700;
+cursor:pointer;
+transition:.3s;
+}
+
+.book-now-btn:hover{
+transform:translateY(-2px);
+box-shadow:0 8px 20px rgba(249,115,22,.4);
+}
+
+@media(max-width:768px){
+
+.main-title{
+font-size:36px;
+}
+
+.vehicles-grid{
+grid-template-columns:1fr;
+}
+
+}

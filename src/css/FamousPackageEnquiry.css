@@ -1,0 +1,60 @@
+.package-enquiry-container{
+padding:80px 20px;
+max-width:800px;
+margin:auto;
+text-align:center;
+}
+
+.enquiry-title{
+font-size:38px;
+color:#c2410c;
+margin-bottom:10px;
+}
+
+.route-text{
+color:#555;
+margin-bottom:30px;
+}
+
+.vehicle-select-box select{
+width:100%;
+padding:12px;
+margin-top:10px;
+border-radius:8px;
+border:1px solid #ddd;
+}
+
+.price-breakdown{
+background:#fff7ed;
+padding:25px;
+margin-top:30px;
+border-radius:10px;
+}
+
+.price-breakdown h2{
+color:#ea580c;
+}
+
+.customer-form{
+margin-top:40px;
+display:flex;
+flex-direction:column;
+gap:15px;
+}
+
+.customer-form input,
+.customer-form textarea{
+padding:12px;
+border-radius:8px;
+border:1px solid #ddd;
+}
+
+.enquiry-btn{
+background:#ea580c;
+color:white;
+border:none;
+padding:14px;
+font-size:16px;
+border-radius:8px;
+cursor:pointer;
+}
