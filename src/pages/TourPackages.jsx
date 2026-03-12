@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import "../css/Package.css";
 
+import famous from "../assets/famous.png";
 import madurai from "../assets/Madurai.jpg";
 import rameshwaram from "../assets/Rameshwaram.webp";
 import kanyakumari from "../assets/kanyakumari.jpeg";
@@ -119,7 +120,7 @@ const Packages = () => {
 
             <div className="image-container">
 
-              <img src={madurai} alt="5 Days Round Trip" />
+              <img src={famous} alt="5 Days Round Trip" />
 
               <span className="package-label">
                 CUSTOM PACKAGE
