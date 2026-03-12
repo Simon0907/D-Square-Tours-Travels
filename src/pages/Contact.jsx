@@ -22,12 +22,12 @@ const Contact = () => {
 
             <InfoItem
               title="Address"
-              text="PRC Nagar, Aruldaspuram, Madurai – 625018, Tamilnadu, India."
+              text="158, Muniyandipuram 1st,Pasumalai,Madurai-625004, Tamilnadu, India."
               icon="📍"
             />
             <InfoItem
               title="Phone Number"
-              text="+91 95666 26109"
+              text="+91 86808 68173"
               icon="📞"
             />
             <InfoItem
@@ -60,12 +60,12 @@ const Contact = () => {
             </div>
 
             <div className="cta-buttons">
-              <a href="tel:+917904754364" className="cta-btn call-btn">
+              <a href="tel:+9186808 68173" className="cta-btn call-btn">
                 📞 Call Now
               </a>
 
               <a
-                href="https://wa.me/917904754364"
+                href="https://wa.me/86808 68173"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="cta-btn whatsapp-btn"
