@@ -2,9 +2,6 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../css/Auth.css";
 
-const ADMIN_EMAIL = "admin@dsquare.com";
-const ADMIN_PASSWORD = "Dsquare@Admin123";
-
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [form, setForm] = useState({
@@ -12,44 +9,60 @@ const Auth = () => {
     email: "",
     password: "",
   });
+
   const navigate = useNavigate();
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (
-      isLogin &&
-      form.email === ADMIN_EMAIL &&
-      form.password === ADMIN_PASSWORD
-    ) {
-      localStorage.setItem("adminAuth", "true");
-      alert("Admin Login Successful!");
-      navigate("/admin");
-      return;
-    }
+    const url = isLogin
+      ? "http://localhost:5000/api/auth/login"
+      : "http://localhost:5000/api/auth/register";
 
-    if (isLogin) {
-      const users = JSON.parse(localStorage.getItem("users")) || [];
-      const user = users.find(
-        (u) => u.email === form.email && u.password === form.password
-      );
+    const payload = isLogin
+      ? { email: form.email, password: form.password }
+      : form;
 
-      if (user) {
-        alert("Login Successful");
-      } else {
-        alert("Invalid credentials");
+    try {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        alert(data.message || "Something went wrong");
+        return;
       }
-    } else {
-      const users = JSON.parse(localStorage.getItem("users")) || [];
-      users.push(form);
-      localStorage.setItem("users", JSON.stringify(users));
-      alert("Signup successful! Please login");
-      setIsLogin(true);
-      setForm({ name: "", email: "", password: "" });
+
+      if (isLogin) {
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("user", JSON.stringify(data.user));
+
+        if (data.user.role === "admin") {
+          localStorage.setItem("adminAuth", "true");
+          alert("Admin Login Successful!");
+          navigate("/admin");
+        } else {
+          alert("Login Successful");
+          navigate("/");
+        }
+      } else {
+        alert("Signup successful! Please login");
+        setIsLogin(true);
+        setForm({ name: "", email: "", password: "" });
+      }
+    } catch (error) {
+      console.error("Auth error:", error);
+      alert("Server error. Please try again.");
     }
   };
 
@@ -147,4 +160,4 @@ const Auth = () => {
   );
 };
 
-export default Auth;
+export default Auth;  
