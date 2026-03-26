@@ -2,68 +2,121 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../css/Auth.css";
 
+// ─── ADMIN CREDENTIALS — change these to whatever you want ───────────────────
+const ADMIN_EMAIL    = "admin@dsquare.com";
+const ADMIN_PASSWORD = "Admin@123";
+// ─────────────────────────────────────────────────────────────────────────────
+
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
-  const [form, setForm] = useState({
-    name: "",
-    email: "",
-    password: "",
-  });
+  const [form, setForm] = useState({ name: "", email: "", password: "" });
+  const [error, setError] = useState("");
 
   const navigate = useNavigate();
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+    setError("");
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
 
-    const url = isLogin
-      ? "http://localhost:5000/api/auth/login"
-      : "http://localhost:5000/api/auth/register";
+    // ── TEMPORARY MOCK LOGIN — remove this block when backend is ready ────────
+    if (isLogin) {
 
-    const payload = isLogin
-      ? { email: form.email, password: form.password }
-      : form;
-
-    try {
-      const response = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        alert(data.message || "Something went wrong");
+      // ── ADMIN CHECK ──────────────────────────────────────────────────────────
+      if (form.email === ADMIN_EMAIL && form.password === ADMIN_PASSWORD) {
+        const adminUser = { name: "Admin", email: ADMIN_EMAIL, role: "admin" };
+        localStorage.setItem("token",     "admin-mock-token-999");
+        localStorage.setItem("user",      JSON.stringify(adminUser));
+        localStorage.setItem("adminAuth", "true");
+        window.dispatchEvent(new Event("storage"));
+        navigate("/admin");
         return;
       }
 
-      if (isLogin) {
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("user", JSON.stringify(data.user));
-
-        if (data.user.role === "admin") {
-          localStorage.setItem("adminAuth", "true");
-          alert("Admin Login Successful!");
-          navigate("/admin");
-        } else {
-          alert("Login Successful");
-          navigate("/");
-        }
-      } else {
-        alert("Signup successful! Please login");
-        setIsLogin(true);
-        setForm({ name: "", email: "", password: "" });
+      // ── WRONG ADMIN PASSWORD (correct email but wrong password) ──────────────
+      if (form.email === ADMIN_EMAIL && form.password !== ADMIN_PASSWORD) {
+        setError("❌ Wrong admin password.");
+        return;
       }
-    } catch (error) {
-      console.error("Auth error:", error);
-      alert("Server error. Please try again.");
+
+      // ── NORMAL USER LOGIN ─────────────────────────────────────────────────────
+      if (!form.email || !form.password) {
+        setError("Please enter email and password.");
+        return;
+      }
+
+      const mockUser = {
+        name:  form.email.split("@")[0],
+        email: form.email,
+        role:  "user",
+      };
+      localStorage.setItem("token", "user-mock-token-123");
+      localStorage.setItem("user",  JSON.stringify(mockUser));
+      window.dispatchEvent(new Event("storage"));
+      navigate("/dashboard");
+      return;
+
+    } else {
+      // ── SIGNUP (mock) ─────────────────────────────────────────────────────────
+      if (!form.name || !form.email || !form.password) {
+        setError("Please fill in all fields.");
+        return;
+      }
+      alert("Signup successful! Please login.");
+      setIsLogin(true);
+      setForm({ name: "", email: "", password: "" });
+      return;
     }
+    // ── END MOCK LOGIN ────────────────────────────────────────────────────────
+
+    // ── REAL API CALLS — uncomment this when backend is ready ─────────────────
+    // const url = isLogin
+    //   ? "http://localhost:5000/api/auth/login"
+    //   : "http://localhost:5000/api/auth/register";
+
+    // const payload = isLogin
+    //   ? { email: form.email, password: form.password }
+    //   : form;
+
+    // try {
+    //   const response = await fetch(url, {
+    //     method: "POST",
+    //     headers: { "Content-Type": "application/json" },
+    //     body: JSON.stringify(payload),
+    //   });
+
+    //   const data = await response.json();
+
+    //   if (!response.ok) {
+    //     setError(data.message || "Something went wrong");
+    //     return;
+    //   }
+
+    //   if (isLogin) {
+    //     localStorage.setItem("token", data.token);
+    //     localStorage.setItem("user", JSON.stringify(data.user));
+    //     window.dispatchEvent(new Event("storage"));
+
+    //     if (data.user.role === "admin") {
+    //       localStorage.setItem("adminAuth", "true");
+    //       navigate("/admin");
+    //     } else {
+    //       navigate("/dashboard");
+    //     }
+    //   } else {
+    //     alert("Signup successful! Please login.");
+    //     setIsLogin(true);
+    //     setForm({ name: "", email: "", password: "" });
+    //   }
+    // } catch (err) {
+    //   console.error("Auth error:", err);
+    //   setError("Server error. Please try again.");
+    // }
+    // ── END REAL API ──────────────────────────────────────────────────────────
   };
 
   return (
@@ -78,13 +131,17 @@ const Auth = () => {
         <div className="card-glow"></div>
 
         <div className="auth-header">
-          <h2 className="auth-title">{isLogin ? "Welcome Back" : "Create Account"}</h2>
+          <h2 className="auth-title">
+            {isLogin ? "Welcome Back" : "Create Account"}
+          </h2>
           <p className="auth-subtitle">
             {isLogin ? "Enter your credentials to continue" : "Sign up to get started"}
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="auth-form">
+
+          {/* Name — signup only */}
           <div className={`input-group ${!isLogin ? "visible" : "hidden"}`}>
             <input
               type="text"
@@ -98,6 +155,7 @@ const Auth = () => {
             <span className="input-border"></span>
           </div>
 
+          {/* Email */}
           <div className="input-group visible">
             <input
               type="email"
@@ -111,6 +169,7 @@ const Auth = () => {
             <span className="input-border"></span>
           </div>
 
+          {/* Password */}
           <div className="input-group visible">
             <input
               type="password"
@@ -123,6 +182,11 @@ const Auth = () => {
             />
             <span className="input-border"></span>
           </div>
+
+          {/* Error message */}
+          {error && (
+            <div className="auth-error-msg">{error}</div>
+          )}
 
           <button type="submit" className="auth-button">
             <span className="button-text">
@@ -141,6 +205,7 @@ const Auth = () => {
           onClick={() => {
             setIsLogin(!isLogin);
             setForm({ name: "", email: "", password: "" });
+            setError("");
           }}
           className="toggle-button"
         >
@@ -160,4 +225,4 @@ const Auth = () => {
   );
 };
 
-export default Auth;  
+export default Auth;

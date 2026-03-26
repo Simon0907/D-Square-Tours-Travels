@@ -15,12 +15,12 @@ import VechilesBooking from"./pages/VehiclesBooking";
 import Auth from "./pages/Auth";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminRoute from "./routes/AdminRoute";
-
+import UserDashboard from "./pages/UserDashboard";
 const App = () => {
   const location = useLocation();
 
   // Hide Navbar & Footer on Admin pages
-  const hideLayout = location.pathname.startsWith("/admin");
+  const hideLayout = location.pathname.startsWith("/admin") || location.pathname.startsWith("/dashboard");
 
   return (
     <>
@@ -51,6 +51,8 @@ const App = () => {
             </AdminRoute>
           }
         />
+        {/*user*/}
+        <Route path="/dashboard" element={<UserDashboard />} />
       </Routes>
 
       {!hideLayout && <Footer />}

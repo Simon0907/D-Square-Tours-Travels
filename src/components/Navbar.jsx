@@ -2,23 +2,29 @@ import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import "../css/Navbar.css";
 
-/* IMPORT LOGO */
-import logo from "../assets/logo.png";   // <-- place your logo file here
+import logo from "../assets/logo.png";
 
 const Navbar = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
+    const syncUser = () => {
+      const storedUser = localStorage.getItem("user");
+      setUser(storedUser ? JSON.parse(storedUser) : null); // ← UPDATED: reactive sync
+    };
+
+    syncUser(); // run on mount
+
+    window.addEventListener("storage", syncUser); // ← ADDED: listen for login/logout
+    return () => window.removeEventListener("storage", syncUser); // cleanup
   }, []);
 
   const logout = () => {
+    localStorage.removeItem("token");  // ← ADDED: also clear token on logout
     localStorage.removeItem("user");
     localStorage.removeItem("adminAuth");
+    window.dispatchEvent(new Event("storage")); // ← ADDED: sync instantly on logout
     setUser(null);
     navigate("/auth");
   };
