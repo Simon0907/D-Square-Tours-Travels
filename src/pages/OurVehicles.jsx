@@ -139,7 +139,7 @@ const TariffPackages = () => {
         <h1 className="main-title">Tariff Packages</h1>
 
         <p className="description">
-          Vismi Cabs offers competitive and transparent tariff plans for local,
+          D Square Tours & Travels offers competitive and transparent tariff plans for local,
           outstation, and tour packages across South India. Choose from a range
           of vehicles like Sedans, SUVs, and Tempo Travellers to suit your
           travel needs and budget.
