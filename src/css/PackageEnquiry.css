@@ -1,62 +1,158 @@
-.enquiry-container{
-max-width:600px;
-margin:auto;
-padding:60px 20px;
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+:root {
+  --orange:      #ff6b00;
+  --orange2:     #e05a00;
+  --orange-soft: rgba(255,107,0,0.07);
+  --bg:          #f4f5f7;
+  --surface:     #ffffff;
+  --surface2:    #fafafa;
+  --border:      #e8e8e8;
+  --border2:     #d0d0d0;
+  --text:        #1a1a1a;
+  --muted:       #888888;
+  --muted2:      #b5b5b5;
+  --red:         #d93636;
+  --r:           13px;
+  --shadow-sm:   0 2px 8px rgba(0,0,0,0.06);
+  --shadow-md:   0 8px 28px rgba(0,0,0,0.1);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+.peq-page {
+  min-height: 100vh; background: var(--bg);
+  padding: 2.5rem 1rem; font-family: 'DM Sans', sans-serif;
+}
+.peq-container {
+  max-width: 740px; margin: 0 auto;
+  display: flex; flex-direction: column; gap: 1.5rem;
+  animation: fadeUp 0.4s ease both;
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-.enquiry-title{
-text-align:center;
-font-size:36px;
-margin-bottom:30px;
+/* Header */
+.peq-header {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 2rem; text-align: center;
+  box-shadow: var(--shadow-sm); position: relative; overflow: hidden;
+}
+.peq-header::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
+  background: linear-gradient(90deg, var(--orange), var(--orange2));
+}
+.peq-badge {
+  display: inline-block;
+  background: var(--orange-soft); border: 1px solid rgba(255,107,0,0.2);
+  color: var(--orange); font-size: 0.75rem; font-weight: 600;
+  padding: 0.25rem 0.85rem; border-radius: 20px;
+  text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.7rem;
+}
+.peq-header h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.8rem; font-weight: 800; color: var(--text); margin-bottom: 0.4rem;
+}
+.peq-sub { font-size: 0.88rem; color: var(--muted); }
+
+/* Form */
+.peq-form { display: flex; flex-direction: column; gap: 1.25rem; }
+
+/* Section */
+.peq-section {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 1.5rem;
+  box-shadow: var(--shadow-sm); display: flex; flex-direction: column; gap: 1rem;
+}
+.peq-section h3 {
+  font-family: 'Playfair Display', serif; font-size: 1.05rem; font-weight: 700;
+  color: var(--text); display: flex; align-items: center; gap: 0.5rem;
+  padding-bottom: 0.75rem; border-bottom: 1px solid var(--border);
+}
+.sec-icon { font-size: 1.1rem; }
+
+/* Grids */
+.peq-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.peq-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+
+/* Fields */
+.peq-field { display: flex; flex-direction: column; gap: 0.4rem; }
+.peq-field label { font-size: 0.82rem; font-weight: 600; color: var(--text); }
+.req { color: var(--orange); }
+
+.peq-field input,
+.peq-field select,
+.peq-field textarea {
+  width: 100%; padding: 0.72rem 0.95rem;
+  background: var(--surface2); border: 1.5px solid var(--border);
+  border-radius: 9px; font-family: 'DM Sans', sans-serif;
+  font-size: 0.88rem; color: var(--text);
+  outline: none; transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+  resize: vertical;
+}
+.peq-field input::placeholder,
+.peq-field textarea::placeholder { color: var(--muted2); }
+.peq-field input:focus,
+.peq-field select:focus,
+.peq-field textarea:focus {
+  border-color: var(--orange); background: #fff;
+  box-shadow: 0 0 0 3px var(--orange-soft);
 }
 
-.package-info{
-background:#fff4ec;
-padding:20px;
-border-radius:10px;
-margin-bottom:30px;
-text-align:center;
+.readonly-input {
+  background: #f0f0f0 !important;
+  color: var(--muted) !important;
+  cursor: not-allowed;
 }
 
-.package-amount{
-color:#ff6a00;
-font-weight:600;
+/* Date/Time inputs */
+.date-input { cursor: pointer; }
+.date-input::-webkit-calendar-picker-indicator {
+  cursor: pointer; opacity: 0.55;
+  filter: invert(45%) sepia(90%) saturate(500%) hue-rotate(10deg);
 }
 
-.enquiry-form{
-display:flex;
-flex-direction:column;
-gap:18px;
+/* Date summary */
+.peq-date-summary {
+  display: flex; align-items: center; gap: 0.6rem;
+  background: linear-gradient(135deg, rgba(255,107,0,0.07), rgba(255,107,0,0.03));
+  border: 1px solid rgba(255,107,0,0.2); border-radius: 9px;
+  padding: 0.7rem 1rem; font-size: 0.86rem; color: var(--text);
+  animation: fadeUp 0.2s ease;
+}
+.peq-date-summary strong { color: var(--orange); }
+
+/* Error */
+.peq-error {
+  background: rgba(217,54,54,0.07); border: 1px solid rgba(217,54,54,0.22);
+  color: var(--red); padding: 0.7rem 1.1rem; border-radius: 9px; font-size: 0.86rem;
 }
 
-.form-group{
-display:flex;
-flex-direction:column;
+/* Actions */
+.peq-actions { display: flex; gap: 1rem; justify-content: flex-end; }
+.peq-cancel {
+  padding: 0.75rem 1.75rem; background: transparent;
+  border: 1.5px solid var(--border2); border-radius: 10px;
+  font-family: 'DM Sans', sans-serif; font-size: 0.9rem;
+  font-weight: 500; color: var(--muted); cursor: pointer; transition: all 0.2s;
 }
-
-.form-group label{
-font-weight:600;
-margin-bottom:6px;
+.peq-cancel:hover { border-color: var(--red); color: var(--red); background: rgba(217,54,54,0.05); }
+.peq-submit {
+  padding: 0.75rem 2rem;
+  background: linear-gradient(135deg, var(--orange), var(--orange2));
+  color: #fff; border: none; border-radius: 10px;
+  font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 600;
+  cursor: pointer; box-shadow: 0 4px 16px rgba(255,107,0,0.3);
+  transition: transform 0.2s, box-shadow 0.2s;
 }
+.peq-submit:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(255,107,0,0.4); }
+.peq-submit:active { transform: translateY(0); }
 
-.form-group input{
-padding:12px;
-border:1px solid #ccc;
-border-radius:6px;
-font-size:14px;
-}
-
-.enquire-btn{
-background:#ff6a00;
-color:white;
-padding:14px;
-border:none;
-border-radius:6px;
-font-size:16px;
-cursor:pointer;
-transition:0.3s;
-}
-
-.enquire-btn:hover{
-background:#e65c00;
+@media (max-width: 640px) {
+  .peq-grid-2, .peq-grid-3 { grid-template-columns: 1fr; }
+  .peq-actions { flex-direction: column; }
+  .peq-cancel, .peq-submit { width: 100%; text-align: center; }
+  .peq-header h1 { font-size: 1.4rem; }
+  .peq-page { padding: 1.5rem 0.75rem; }
 }

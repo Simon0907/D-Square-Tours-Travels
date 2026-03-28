@@ -1,133 +1,250 @@
-import React, { useState } from 'react';
-import { useLocation } from "react-router-dom";
-import '../css/VehiclesBooking.css';
+import { useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import "../css/VehiclesBooking.css";
 
+const today = new Date().toISOString().split("T")[0];
 
-const BookingForm = () => {
+const VehiclesBooking = () => {
+  const location = useLocation();
+  const navigate  = useNavigate();
+  const vehicle   = location.state?.vehicle;
+
   const [formData, setFormData] = useState({
-    name: '',
-    address: '',
-    pickupLocation: '',
-    dropLocation: '',
-    numberOfPersons: ''
+    name:           "",
+    phone:          "",
+    email:          "",
+    address:        "",
+    pickupLocation: "",
+    dropLocation:   "",
+    noOfPersons:    "",
+    travelDate:     "",   // ← NEW
+    travelTime:     "",   // ← NEW
+    returnDate:     "",   // ← NEW
+    tripType:       "One Way",
+    specialRequest: "",
   });
 
+  const [error, setError] = useState("");
+
+  const minReturn = formData.travelDate
+    ? new Date(new Date(formData.travelDate).getTime() + 86400000)
+        .toISOString().split("T")[0]
+    : today;
+
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prevState => ({
-      ...prevState,
-      [name]: value
-    }));
+    setFormData((p) => ({ ...p, [e.target.name]: e.target.value }));
+    setError("");
   };
+
+  const fmt = (d) =>
+    d ? new Date(d).toLocaleDateString("en-IN", {
+          day: "numeric", month: "short", year: "numeric",
+        })
+      : "";
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log('Booking Details:', formData);
+
+    if (!formData.travelDate || !formData.travelTime) {
+      setError("Please select travel date and pickup time.");
+      return;
+    }
+
+    if (formData.tripType === "Round Trip" && !formData.returnDate) {
+      setError("Please select return date for round trip.");
+      return;
+    }
+
+    // ── Build booking object ──────────────────────────────────────────────────
+    const booking = {
+      id:             `VEH-${Date.now()}`,
+      type:           "Vehicle Booking",
+      vehicleName:    vehicle?.name || "Vehicle",
+      rentPerDay:     vehicle?.rentPerDay,
+      fuelCharge:     vehicle?.fuelChargeBelowKm,
+      driverBetta:    vehicle?.driverBetta,
+      customer:       formData.name,
+      phone:          formData.phone,
+      email:          formData.email,
+      address:        formData.address,
+      pickupLocation: formData.pickupLocation,
+      dropLocation:   formData.dropLocation,
+      numberOfPersons:formData.noOfPersons,
+      travelDate:     formData.travelDate,
+      travelTime:     formData.travelTime,
+      returnDate:     formData.tripType === "Round Trip" ? formData.returnDate : null,
+      tripType:       formData.tripType,
+      specialRequest: formData.specialRequest,
+      status:         "pending",
+      bookedAt:       new Date().toISOString(),
+      date:           new Date().toLocaleDateString("en-IN", {
+                        day: "numeric", month: "short", year: "numeric",
+                      }),
+    };
+
+    // ── Save to localStorage for admin ────────────────────────────────────────
+    const existing = JSON.parse(localStorage.getItem("adminVehicleBookings")) || [];
+    existing.unshift(booking);
+    localStorage.setItem("adminVehicleBookings", JSON.stringify(existing));
+    window.dispatchEvent(new Event("storage"));
+
+    alert(
+      `✅ Vehicle Booked!\n\nVehicle: ${vehicle?.name}\nTrip: ${formData.tripType}\nTravel: ${formData.travelDate} at ${formData.travelTime}${formData.returnDate ? `\nReturn: ${formData.returnDate}` : ""}\n\nThank you, ${formData.name}!`
+    );
+
+    navigate("/ourvehicles");
   };
 
-  return (
-    <div className="booking-form-container">
-      <div className="booking-header">
-        <div className="section-label">
-          <span className="label-line"></span>
-          <span className="label-text">BOOK YOUR RIDE</span>
-        </div>
-        <h1 className="form-title">Vehicle Booking Form</h1>
-        <p className="form-description">
-          Fill in the details below to book your vehicle. Our team will contact you shortly to confirm your booking.
-        </p>
-      </div>
-
-      <form className="booking-form" onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label htmlFor="name" className="form-label">
-            Full Name <span className="required">*</span>
-          </label>
-          <input
-            type="text"
-            id="name"
-            name="name"
-            className="form-input"
-            value={formData.name}
-            onChange={handleChange}
-            placeholder="Enter your full name"
-            required
-          />
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="address" className="form-label">
-            Address <span className="required">*</span>
-          </label>
-          <textarea
-            id="address"
-            name="address"
-            className="form-textarea"
-            value={formData.address}
-            onChange={handleChange}
-            placeholder="Enter your complete address"
-            rows="3"
-            required
-          />
-        </div>
-
-        <div className="form-row">
-          <div className="form-group">
-            <label htmlFor="pickupLocation" className="form-label">
-              Pickup Location <span className="required">*</span>
-            </label>
-            <input
-              type="text"
-              id="pickupLocation"
-              name="pickupLocation"
-              className="form-input"
-              value={formData.pickupLocation}
-              onChange={handleChange}
-              placeholder="Enter pickup location"
-              required
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="dropLocation" className="form-label">
-              Drop Location <span className="required">*</span>
-            </label>
-            <input
-              type="text"
-              id="dropLocation"
-              name="dropLocation"
-              className="form-input"
-              value={formData.dropLocation}
-              onChange={handleChange}
-              placeholder="Enter drop location"
-              required
-            />
-          </div>
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="numberOfPersons" className="form-label">
-            Number of Persons <span className="required">*</span>
-          </label>
-          <input
-            type="number"
-            id="numberOfPersons"
-            name="numberOfPersons"
-            className="form-input"
-            value={formData.numberOfPersons}
-            onChange={handleChange}
-            placeholder="Enter number of persons"
-            min="1"
-            required
-          />
-        </div>
-
-        <button type="submit" className="submit-btn">
-          Book Now
+  if (!vehicle) {
+    return (
+      <div style={{ padding: "3rem", textAlign: "center" }}>
+        <p>No vehicle selected.</p>
+        <button onClick={() => navigate("/ourvehicles")} style={{ marginTop: "1rem", padding: "0.5rem 1.5rem" }}>
+          Go Back
         </button>
-      </form>
+      </div>
+    );
+  }
+
+  return (
+    <div className="vb-page">
+      <div className="vb-container">
+
+        {/* ── Header ── */}
+        <div className="vb-header">
+          <span className="vb-badge">Vehicle Booking</span>
+          <h1>{vehicle.name}</h1>
+          <div className="vb-vehicle-info">
+            <span>🚗 {vehicle.name}</span>
+            <span>💰 {vehicle.rentPerDay} / day</span>
+            <span>⛽ {vehicle.fuelChargeBelowKm} / km</span>
+            <span>👨‍✈️ Driver Betta: {vehicle.driverBetta}</span>
+          </div>
+          <p className="vb-extra">Extra: Tollgate, Parking, Hills charges applicable</p>
+        </div>
+
+        <form className="vb-form" onSubmit={handleSubmit}>
+
+          {/* ── Trip Type ── */}
+          <div className="vb-section">
+            <h3><span className="sec-icon">🗺</span> Trip Type</h3>
+            <div className="vb-radio-group">
+              {["One Way", "Round Trip", "Local"].map((t) => (
+                <label
+                  key={t}
+                  className={`vb-radio ${formData.tripType === t ? "selected" : ""}`}
+                >
+                  <input type="radio" name="tripType" value={t}
+                    checked={formData.tripType === t} onChange={handleChange} />
+                  {t}
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {/* ── Travel Date & Time ── */}
+          <div className="vb-section">
+            <h3><span className="sec-icon">🗓</span> Travel Date & Time</h3>
+
+            <div className={`vb-grid-${formData.tripType === "Round Trip" ? "3" : "2"}`}>
+              <div className="vb-field">
+                <label>Travel Date <span className="req">*</span></label>
+                <input type="date" name="travelDate"
+                  value={formData.travelDate} onChange={handleChange}
+                  min={today} required className="date-input" />
+              </div>
+              <div className="vb-field">
+                <label>Pickup Time <span className="req">*</span></label>
+                <input type="time" name="travelTime"
+                  value={formData.travelTime} onChange={handleChange}
+                  required className="date-input" />
+              </div>
+              {formData.tripType === "Round Trip" && (
+                <div className="vb-field">
+                  <label>Return Date <span className="req">*</span></label>
+                  <input type="date" name="returnDate"
+                    value={formData.returnDate} onChange={handleChange}
+                    min={minReturn} required className="date-input" />
+                </div>
+              )}
+            </div>
+
+            {formData.travelDate && formData.travelTime && (
+              <div className="vb-date-summary">
+                <span>📅</span>
+                <span>
+                  Pickup on <strong>{fmt(formData.travelDate)}</strong> at{" "}
+                  <strong>{formData.travelTime}</strong>
+                  {formData.tripType === "Round Trip" && formData.returnDate && (
+                    <> → Return on <strong>{fmt(formData.returnDate)}</strong></>
+                  )}
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* ── Customer Details ── */}
+          <div className="vb-section">
+            <h3><span className="sec-icon">👤</span> Customer Details</h3>
+
+            <div className="vb-grid-2">
+              <div className="vb-field">
+                <label>Full Name <span className="req">*</span></label>
+                <input type="text" name="name" placeholder="Your full name"
+                  value={formData.name} onChange={handleChange} required />
+              </div>
+              <div className="vb-field">
+                <label>Phone Number <span className="req">*</span></label>
+                <input type="tel" name="phone" placeholder="+91 XXXXX XXXXX"
+                  value={formData.phone} onChange={handleChange} required />
+              </div>
+              <div className="vb-field">
+                <label>Email</label>
+                <input type="email" name="email" placeholder="you@email.com"
+                  value={formData.email} onChange={handleChange} />
+              </div>
+              <div className="vb-field">
+                <label>No. of Persons <span className="req">*</span></label>
+                <input type="number" name="noOfPersons" placeholder="e.g. 3"
+                  value={formData.noOfPersons} onChange={handleChange} min="1" required />
+              </div>
+              <div className="vb-field">
+                <label>Pickup Location <span className="req">*</span></label>
+                <input type="text" name="pickupLocation" placeholder="Where to pick you up"
+                  value={formData.pickupLocation} onChange={handleChange} required />
+              </div>
+              <div className="vb-field">
+                <label>Drop Location</label>
+                <input type="text" name="dropLocation" placeholder="Drop location"
+                  value={formData.dropLocation} onChange={handleChange} />
+              </div>
+            </div>
+
+            <div className="vb-field">
+              <label>Address</label>
+              <textarea name="address" placeholder="Your full address"
+                value={formData.address} onChange={handleChange} rows={2} />
+            </div>
+
+            <div className="vb-field">
+              <label>Special Requests</label>
+              <textarea name="specialRequest" placeholder="Any special requirements?"
+                value={formData.specialRequest} onChange={handleChange} rows={2} />
+            </div>
+          </div>
+
+          {error && <div className="vb-error">⚠ {error}</div>}
+
+          <div className="vb-actions">
+            <button type="button" className="vb-cancel"
+              onClick={() => navigate("/ourvehicles")}>Cancel</button>
+            <button type="submit" className="vb-submit">Confirm Booking ✓</button>
+          </div>
+
+        </form>
+      </div>
     </div>
   );
 };
 
-export default BookingForm;
+export default VehiclesBooking;
