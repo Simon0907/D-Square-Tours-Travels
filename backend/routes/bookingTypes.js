@@ -4,7 +4,7 @@ const FamousBooking    = require("../models/FamousBooking");
 const PackageEnquiry   = require("../models/PackageEnquiry");
 const VehicleBooking   = require("../models/VehicleBooking");
 const { protect }      = require("../middleware/auth");
-const { sendBookingConfirmation, sendAdminNotification } = require("../config/email");
+const { sendBookingConfirmation, sendAdminNotification, row } = require("../config/email");
 
 // ══════════════════════════════════════════════════════════════════════════════
 // FAMOUS PACKAGE BOOKINGS — NO LOGIN REQUIRED
@@ -29,22 +29,22 @@ router.post("/famous-bookings", async (req, res) => {
     });
 
     // ── Email to admin ────────────────────────────────────────────────────────
-    await sendAdminNotification({
+    sendAdminNotification({
       type: "⭐ Famous Package Booking",
       customerName: customer,
-      details: `
-        <p><strong>Customer:</strong> ${customer}</p>
-        <p><strong>Phone:</strong> ${phone}</p>
-        <p><strong>Pickup:</strong> ${pickupLocation}</p>
-        <p><strong>Persons:</strong> ${numberOfPersons}</p>
-        <p><strong>Vehicle:</strong> ${vehicle}</p>
-        <p><strong>Travel Date:</strong> ${travelDate} at ${travelTime}</p>
-        <p><strong>Return Date:</strong> ${returnDate}</p>
-        <p><strong>Total KM:</strong> ${totalKm || 1100} km</p>
-        <p><strong>Amount:</strong> ₹${Number(amount).toLocaleString()}</p>
-        <p><strong>Booking ID:</strong> ${booking.bookingId}</p>
-      `,
-    });
+      details:
+        row("Customer",    customer) +
+        row("Phone",       phone) +
+        row("Pickup",      pickupLocation) +
+        row("Persons",     numberOfPersons) +
+        row("Vehicle",     vehicle) +
+        row("Travel Date", new Date(travelDate).toLocaleDateString("en-IN")) +
+        row("Pickup Time", travelTime) +
+        row("Return Date", new Date(returnDate).toLocaleDateString("en-IN")) +
+        row("Total KM",    `${totalKm || 1100} km`) +
+        row("Amount",      `₹${Number(amount).toLocaleString()}`) +
+        row("Booking ID",  booking.bookingId),
+    }).catch(() => {});
 
     res.status(201).json({ message: "Famous package booked successfully", booking });
   } catch (error) {
@@ -82,38 +82,36 @@ router.post("/enquiries", async (req, res) => {
     });
 
     // ── Email to admin ────────────────────────────────────────────────────────
-    await sendAdminNotification({
+    sendAdminNotification({
       type: "📋 Package Enquiry",
       customerName: name,
-      details: `
-        <p><strong>Customer:</strong> ${name}</p>
-        <p><strong>Phone:</strong> ${phoneNumber}</p>
-        ${email ? `<p><strong>Email:</strong> ${email}</p>` : ""}
-        <p><strong>Package:</strong> ${selectedPackage}</p>
-        <p><strong>Pickup:</strong> ${pickupLocation}</p>
-        <p><strong>Persons:</strong> ${noOfPersons}</p>
-        <p><strong>Travel Date:</strong> ${travelDate} at ${travelTime || "—"}</p>
-        <p><strong>Return Date:</strong> ${returnDate || "—"}</p>
-        <p><strong>Enquiry ID:</strong> ${enquiry.enquiryId}</p>
-      `,
-    });
+      details:
+        row("Customer",    name) +
+        row("Phone",       phoneNumber) +
+        (email ? row("Email", email) : "") +
+        row("Package",     selectedPackage) +
+        row("Pickup",      pickupLocation) +
+        row("Persons",     noOfPersons) +
+        row("Travel Date", travelDate) +
+        row("Time",        travelTime || "—") +
+        row("Return Date", returnDate || "—") +
+        row("Enquiry ID",  enquiry.enquiryId),
+    }).catch(() => {});
 
-    // ── Confirmation email to customer (if they gave email) ───────────────────
+    // ── Confirmation email to customer ────────────────────────────────────────
     if (email) {
-      await sendBookingConfirmation({
-        to: email,
-        name,
-        type: "Package Enquiry",
-        details: `
-          <p><strong>Package:</strong> ${selectedPackage}</p>
-          <p><strong>Travel Date:</strong> ${travelDate} at ${travelTime || "—"}</p>
-          <p><strong>Return Date:</strong> ${returnDate || "—"}</p>
-          <p><strong>Pickup:</strong> ${pickupLocation}</p>
-          <p><strong>Persons:</strong> ${noOfPersons}</p>
-          <p><strong>Reference ID:</strong> ${enquiry.enquiryId}</p>
-          <p style="color:#888;margin-top:12px;">Our team will contact you shortly with pricing details.</p>
-        `,
-      });
+      sendBookingConfirmation({
+        to: email, name, type: "Package Enquiry",
+        details:
+          row("Package",     selectedPackage) +
+          row("Travel Date", travelDate) +
+          row("Time",        travelTime || "—") +
+          row("Return Date", returnDate || "—") +
+          row("Pickup",      pickupLocation) +
+          row("Persons",     noOfPersons) +
+          row("Reference",   enquiry.enquiryId),
+        bookingId: enquiry.enquiryId,
+      }).catch(() => {});
     }
 
     res.status(201).json({ message: "Enquiry submitted successfully", enquiry });
@@ -159,41 +157,39 @@ router.post("/vehicle-bookings", async (req, res) => {
     });
 
     // ── Email to admin ────────────────────────────────────────────────────────
-    await sendAdminNotification({
+    sendAdminNotification({
       type: "🚗 Vehicle Booking",
       customerName: name,
-      details: `
-        <p><strong>Customer:</strong> ${name}</p>
-        <p><strong>Phone:</strong> ${phone}</p>
-        ${email ? `<p><strong>Email:</strong> ${email}</p>` : ""}
-        <p><strong>Vehicle:</strong> ${vehicle?.name || vehicle}</p>
-        <p><strong>Trip Type:</strong> ${tripType || "One Way"}</p>
-        <p><strong>Travel Date:</strong> ${travelDate} at ${travelTime}</p>
-        ${returnDate ? `<p><strong>Return Date:</strong> ${returnDate}</p>` : ""}
-        <p><strong>Pickup:</strong> ${pickupLocation}</p>
-        ${dropLocation ? `<p><strong>Drop:</strong> ${dropLocation}</p>` : ""}
-        <p><strong>Persons:</strong> ${noOfPersons}</p>
-        <p><strong>Rent/Day:</strong> ${vehicle?.rentPerDay || "—"}</p>
-        <p><strong>Booking ID:</strong> ${booking.bookingId}</p>
-      `,
-    });
+      details:
+        row("Customer",    name) +
+        row("Phone",       phone) +
+        (email ? row("Email", email) : "") +
+        row("Vehicle",     vehicle?.name || vehicle) +
+        row("Trip Type",   tripType || "One Way") +
+        row("Travel Date", travelDate) +
+        row("Pickup Time", travelTime) +
+        (returnDate ? row("Return Date", returnDate) : "") +
+        row("Pickup",      pickupLocation) +
+        (dropLocation ? row("Drop", dropLocation) : "") +
+        row("Persons",     noOfPersons) +
+        row("Rent/Day",    vehicle?.rentPerDay || "—") +
+        row("Booking ID",  booking.bookingId),
+    }).catch(() => {});
 
-    // ── Confirmation email to customer (if email given) ───────────────────────
+    // ── Confirmation email to customer ────────────────────────────────────────
     if (email) {
-      await sendBookingConfirmation({
-        to: email,
-        name,
-        type: "Vehicle Booking",
-        details: `
-          <p><strong>Vehicle:</strong> ${vehicle?.name || vehicle}</p>
-          <p><strong>Trip Type:</strong> ${tripType || "One Way"}</p>
-          <p><strong>Travel Date:</strong> ${travelDate} at ${travelTime}</p>
-          ${returnDate ? `<p><strong>Return Date:</strong> ${returnDate}</p>` : ""}
-          <p><strong>Pickup:</strong> ${pickupLocation}</p>
-          <p><strong>Booking ID:</strong> ${booking.bookingId}</p>
-          <p style="color:#888;margin-top:12px;">Our team will contact you shortly to confirm your booking.</p>
-        `,
-      });
+      sendBookingConfirmation({
+        to: email, name, type: "Vehicle Booking",
+        details:
+          row("Vehicle",     vehicle?.name || vehicle) +
+          row("Trip Type",   tripType || "One Way") +
+          row("Travel Date", travelDate) +
+          row("Pickup Time", travelTime) +
+          (returnDate ? row("Return Date", returnDate) : "") +
+          row("Pickup",      pickupLocation) +
+          row("Booking ID",  booking.bookingId),
+        bookingId: booking.bookingId,
+      }).catch(() => {});
     }
 
     res.status(201).json({ message: "Vehicle booked successfully", booking });
