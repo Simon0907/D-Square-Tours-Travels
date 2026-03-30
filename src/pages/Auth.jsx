@@ -23,99 +23,51 @@ const Auth = () => {
     e.preventDefault();
     setError("");
 
-    // ── TEMPORARY MOCK LOGIN — remove this block when backend is ready ────────
-    if (isLogin) {
 
-      // ── ADMIN CHECK ──────────────────────────────────────────────────────────
-      if (form.email === ADMIN_EMAIL && form.password === ADMIN_PASSWORD) {
-        const adminUser = { name: "Admin", email: ADMIN_EMAIL, role: "admin" };
-        localStorage.setItem("token",     "admin-mock-token-999");
-        localStorage.setItem("user",      JSON.stringify(adminUser));
-        localStorage.setItem("adminAuth", "true");
-        window.dispatchEvent(new Event("storage"));
-        navigate("/admin");
-        return;
-      }
-
-      // ── WRONG ADMIN PASSWORD (correct email but wrong password) ──────────────
-      if (form.email === ADMIN_EMAIL && form.password !== ADMIN_PASSWORD) {
-        setError("❌ Wrong admin password.");
-        return;
-      }
-
-      // ── NORMAL USER LOGIN ─────────────────────────────────────────────────────
-      if (!form.email || !form.password) {
-        setError("Please enter email and password.");
-        return;
-      }
-
-      const mockUser = {
-        name:  form.email.split("@")[0],
-        email: form.email,
-        role:  "user",
-      };
-      localStorage.setItem("token", "user-mock-token-123");
-      localStorage.setItem("user",  JSON.stringify(mockUser));
-      window.dispatchEvent(new Event("storage"));
-      navigate("/dashboard");
-      return;
-
-    } else {
-      // ── SIGNUP (mock) ─────────────────────────────────────────────────────────
-      if (!form.name || !form.email || !form.password) {
-        setError("Please fill in all fields.");
-        return;
-      }
-      alert("Signup successful! Please login.");
-      setIsLogin(true);
-      setForm({ name: "", email: "", password: "" });
-      return;
-    }
-    // ── END MOCK LOGIN ────────────────────────────────────────────────────────
 
     // ── REAL API CALLS — uncomment this when backend is ready ─────────────────
-    // const url = isLogin
-    //   ? "http://localhost:5000/api/auth/login"
-    //   : "http://localhost:5000/api/auth/register";
+     const url = isLogin
+       ? "http://localhost:5000/api/auth/login"
+      : "http://localhost:5000/api/auth/register";
 
-    // const payload = isLogin
-    //   ? { email: form.email, password: form.password }
-    //   : form;
+     const payload = isLogin
+      ? { email: form.email, password: form.password }
+       : form;
 
-    // try {
-    //   const response = await fetch(url, {
-    //     method: "POST",
-    //     headers: { "Content-Type": "application/json" },
-    //     body: JSON.stringify(payload),
-    //   });
+     try {
+       const response = await fetch(url, {
+         method: "POST",
+         headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
 
-    //   const data = await response.json();
+      const data = await response.json();
 
-    //   if (!response.ok) {
-    //     setError(data.message || "Something went wrong");
-    //     return;
-    //   }
+     if (!response.ok) {
+         setError(data.message || "Something went wrong");
+         return;
+       }
 
-    //   if (isLogin) {
-    //     localStorage.setItem("token", data.token);
-    //     localStorage.setItem("user", JSON.stringify(data.user));
-    //     window.dispatchEvent(new Event("storage"));
+       if (isLogin) {
+         localStorage.setItem("token", data.token);
+        localStorage.setItem("user", JSON.stringify(data.user));
+         window.dispatchEvent(new Event("storage"));
 
-    //     if (data.user.role === "admin") {
-    //       localStorage.setItem("adminAuth", "true");
-    //       navigate("/admin");
-    //     } else {
-    //       navigate("/dashboard");
-    //     }
-    //   } else {
-    //     alert("Signup successful! Please login.");
-    //     setIsLogin(true);
-    //     setForm({ name: "", email: "", password: "" });
-    //   }
-    // } catch (err) {
-    //   console.error("Auth error:", err);
-    //   setError("Server error. Please try again.");
-    // }
+        if (data.user.role === "admin") {
+           localStorage.setItem("adminAuth", "true");
+           navigate("/admin");
+        } else {
+           navigate("/dashboard");
+        }
+      } else {
+        alert("Signup successful! Please login.");
+        setIsLogin(true);
+        setForm({ name: "", email: "", password: "" });
+       }
+    } catch (err) {
+       console.error("Auth error:", err);
+       setError("Server error. Please try again.");
+    }
     // ── END REAL API ──────────────────────────────────────────────────────────
   };
 

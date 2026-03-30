@@ -390,3 +390,13 @@
   .ud-hero-left h1{ font-size: 1.55rem; }
   .ud-stats       { gap: 1rem; padding: 1rem; }
 }
+
+/* ── Embedded pages (TourPackages / OurVehicles inside dashboard) ────────── */
+.ud-embedded-page {
+  margin: 0 -2rem;   /* bleed to edges */
+}
+
+.ud-embedded-page .tariff-packages,
+.ud-embedded-page > div {
+  padding-top: 0 !important;
+}

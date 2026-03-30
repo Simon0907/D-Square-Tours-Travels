@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import "../css/VehiclesBooking.css";
 
+const BASE  = "http://localhost:5000/api";
 const today = new Date().toISOString().split("T")[0];
 
 const VehiclesBooking = () => {
@@ -17,14 +18,15 @@ const VehiclesBooking = () => {
     pickupLocation: "",
     dropLocation:   "",
     noOfPersons:    "",
-    travelDate:     "",   // ← NEW
-    travelTime:     "",   // ← NEW
-    returnDate:     "",   // ← NEW
+    travelDate:     "",
+    travelTime:     "",
+    returnDate:     "",
     tripType:       "One Way",
     specialRequest: "",
   });
 
-  const [error, setError] = useState("");
+  const [error,      setError]      = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   const minReturn = formData.travelDate
     ? new Date(new Date(formData.travelDate).getTime() + 86400000)
@@ -42,64 +44,74 @@ const VehiclesBooking = () => {
         })
       : "";
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!formData.travelDate || !formData.travelTime) {
       setError("Please select travel date and pickup time.");
       return;
     }
-
     if (formData.tripType === "Round Trip" && !formData.returnDate) {
       setError("Please select return date for round trip.");
       return;
     }
 
-    // ── Build booking object ──────────────────────────────────────────────────
-    const booking = {
-      id:             `VEH-${Date.now()}`,
-      type:           "Vehicle Booking",
-      vehicleName:    vehicle?.name || "Vehicle",
-      rentPerDay:     vehicle?.rentPerDay,
-      fuelCharge:     vehicle?.fuelChargeBelowKm,
-      driverBetta:    vehicle?.driverBetta,
-      customer:       formData.name,
-      phone:          formData.phone,
-      email:          formData.email,
-      address:        formData.address,
-      pickupLocation: formData.pickupLocation,
-      dropLocation:   formData.dropLocation,
-      numberOfPersons:formData.noOfPersons,
-      travelDate:     formData.travelDate,
-      travelTime:     formData.travelTime,
-      returnDate:     formData.tripType === "Round Trip" ? formData.returnDate : null,
-      tripType:       formData.tripType,
-      specialRequest: formData.specialRequest,
-      status:         "pending",
-      bookedAt:       new Date().toISOString(),
-      date:           new Date().toLocaleDateString("en-IN", {
-                        day: "numeric", month: "short", year: "numeric",
-                      }),
-    };
+    setSubmitting(true);
+    setError("");
 
-    // ── Save to localStorage for admin ────────────────────────────────────────
-    const existing = JSON.parse(localStorage.getItem("adminVehicleBookings")) || [];
-    existing.unshift(booking);
-    localStorage.setItem("adminVehicleBookings", JSON.stringify(existing));
-    window.dispatchEvent(new Event("storage"));
+    try {
+      // ── POST to backend — no login needed ───────────────────────────────────
+      const res = await fetch(`${BASE}/vehicle-bookings`, {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({
+          name:           formData.name,
+          phone:          formData.phone,
+          email:          formData.email,
+          address:        formData.address,
+          pickupLocation: formData.pickupLocation,
+          dropLocation:   formData.dropLocation,
+          noOfPersons:    formData.noOfPersons,
+          travelDate:     formData.travelDate,
+          travelTime:     formData.travelTime,
+          returnDate:     formData.tripType === "Round Trip" ? formData.returnDate : null,
+          tripType:       formData.tripType,
+          specialRequest: formData.specialRequest,
+          vehicle: {
+            name:              vehicle?.name,
+            rentPerDay:        vehicle?.rentPerDay,
+            fuelChargeBelowKm: vehicle?.fuelChargeBelowKm,
+            driverBetta:       vehicle?.driverBetta,
+          },
+        }),
+      });
 
-    alert(
-      `✅ Vehicle Booked!\n\nVehicle: ${vehicle?.name}\nTrip: ${formData.tripType}\nTravel: ${formData.travelDate} at ${formData.travelTime}${formData.returnDate ? `\nReturn: ${formData.returnDate}` : ""}\n\nThank you, ${formData.name}!`
-    );
+      const data = await res.json();
 
-    navigate("/ourvehicles");
+      if (!res.ok) {
+        setError(data.message || "Booking failed. Please try again.");
+        return;
+      }
+
+      alert(
+        `✅ Vehicle Booked!\n\nVehicle: ${vehicle?.name}\nTrip: ${formData.tripType}\nTravel: ${formData.travelDate} at ${formData.travelTime}${formData.returnDate ? `\nReturn: ${formData.returnDate}` : ""}\n\nThank you, ${formData.name}!\nBooking ID: ${data.booking?.bookingId || ""}`
+      );
+
+      navigate("/ourvehicles");
+    } catch (err) {
+      console.error(err);
+      setError("Server error. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (!vehicle) {
     return (
-      <div style={{ padding: "3rem", textAlign: "center" }}>
+      <div style={{ padding:"3rem", textAlign:"center" }}>
         <p>No vehicle selected.</p>
-        <button onClick={() => navigate("/ourvehicles")} style={{ marginTop: "1rem", padding: "0.5rem 1.5rem" }}>
+        <button onClick={() => navigate("/ourvehicles")}
+          style={{ marginTop:"1rem", padding:"0.5rem 1.5rem" }}>
           Go Back
         </button>
       </div>
@@ -110,7 +122,6 @@ const VehiclesBooking = () => {
     <div className="vb-page">
       <div className="vb-container">
 
-        {/* ── Header ── */}
         <div className="vb-header">
           <span className="vb-badge">Vehicle Booking</span>
           <h1>{vehicle.name}</h1>
@@ -125,15 +136,12 @@ const VehiclesBooking = () => {
 
         <form className="vb-form" onSubmit={handleSubmit}>
 
-          {/* ── Trip Type ── */}
+          {/* Trip Type */}
           <div className="vb-section">
             <h3><span className="sec-icon">🗺</span> Trip Type</h3>
             <div className="vb-radio-group">
               {["One Way", "Round Trip", "Local"].map((t) => (
-                <label
-                  key={t}
-                  className={`vb-radio ${formData.tripType === t ? "selected" : ""}`}
-                >
+                <label key={t} className={`vb-radio ${formData.tripType === t ? "selected" : ""}`}>
                   <input type="radio" name="tripType" value={t}
                     checked={formData.tripType === t} onChange={handleChange} />
                   {t}
@@ -142,33 +150,28 @@ const VehiclesBooking = () => {
             </div>
           </div>
 
-          {/* ── Travel Date & Time ── */}
+          {/* Travel Date & Time */}
           <div className="vb-section">
             <h3><span className="sec-icon">🗓</span> Travel Date & Time</h3>
-
             <div className={`vb-grid-${formData.tripType === "Round Trip" ? "3" : "2"}`}>
               <div className="vb-field">
                 <label>Travel Date <span className="req">*</span></label>
-                <input type="date" name="travelDate"
-                  value={formData.travelDate} onChange={handleChange}
-                  min={today} required className="date-input" />
+                <input type="date" name="travelDate" value={formData.travelDate}
+                  onChange={handleChange} min={today} required className="date-input" />
               </div>
               <div className="vb-field">
                 <label>Pickup Time <span className="req">*</span></label>
-                <input type="time" name="travelTime"
-                  value={formData.travelTime} onChange={handleChange}
-                  required className="date-input" />
+                <input type="time" name="travelTime" value={formData.travelTime}
+                  onChange={handleChange} required className="date-input" />
               </div>
               {formData.tripType === "Round Trip" && (
                 <div className="vb-field">
                   <label>Return Date <span className="req">*</span></label>
-                  <input type="date" name="returnDate"
-                    value={formData.returnDate} onChange={handleChange}
-                    min={minReturn} required className="date-input" />
+                  <input type="date" name="returnDate" value={formData.returnDate}
+                    onChange={handleChange} min={minReturn} required className="date-input" />
                 </div>
               )}
             </div>
-
             {formData.travelDate && formData.travelTime && (
               <div className="vb-date-summary">
                 <span>📅</span>
@@ -183,10 +186,9 @@ const VehiclesBooking = () => {
             )}
           </div>
 
-          {/* ── Customer Details ── */}
+          {/* Customer Details */}
           <div className="vb-section">
             <h3><span className="sec-icon">👤</span> Customer Details</h3>
-
             <div className="vb-grid-2">
               <div className="vb-field">
                 <label>Full Name <span className="req">*</span></label>
@@ -199,7 +201,7 @@ const VehiclesBooking = () => {
                   value={formData.phone} onChange={handleChange} required />
               </div>
               <div className="vb-field">
-                <label>Email</label>
+                <label>Email <span style={{fontSize:"0.75rem",color:"#888"}}>(for confirmation)</span></label>
                 <input type="email" name="email" placeholder="you@email.com"
                   value={formData.email} onChange={handleChange} />
               </div>
@@ -219,13 +221,11 @@ const VehiclesBooking = () => {
                   value={formData.dropLocation} onChange={handleChange} />
               </div>
             </div>
-
             <div className="vb-field">
               <label>Address</label>
               <textarea name="address" placeholder="Your full address"
                 value={formData.address} onChange={handleChange} rows={2} />
             </div>
-
             <div className="vb-field">
               <label>Special Requests</label>
               <textarea name="specialRequest" placeholder="Any special requirements?"
@@ -238,7 +238,9 @@ const VehiclesBooking = () => {
           <div className="vb-actions">
             <button type="button" className="vb-cancel"
               onClick={() => navigate("/ourvehicles")}>Cancel</button>
-            <button type="submit" className="vb-submit">Confirm Booking ✓</button>
+            <button type="submit" className="vb-submit" disabled={submitting}>
+              {submitting ? "Booking..." : "Confirm Booking ✓"}
+            </button>
           </div>
 
         </form>

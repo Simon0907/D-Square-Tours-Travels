@@ -404,3 +404,21 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
   justify-content: center;
   padding: 0 5px;
 }
+
+/* ── REFRESH BUTTON ─────────────────────────────────────────────────────────── */
+.header-actions { display: flex; align-items: center; gap: 0.75rem; }
+
+.refresh-btn {
+  background: var(--orange-soft);
+  border: 1px solid rgba(255,107,0,0.2);
+  color: var(--orange);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.82rem; font-weight: 600;
+  padding: 0.42rem 0.9rem;
+  border-radius: 8px; cursor: pointer;
+  transition: all 0.2s;
+}
+.refresh-btn:hover {
+  background: var(--orange);
+  color: #fff;
+}
