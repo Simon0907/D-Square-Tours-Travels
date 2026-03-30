@@ -32,6 +32,7 @@ const FamousPackageEnquiry = () => {
   const [form, setForm] = useState({
     name:            "",
     phone:           "",
+    email:           "",        // ← email for confirmation mail
     pickupLocation:  "",
     numberOfPersons: "",
     address:         "",
@@ -76,13 +77,13 @@ const FamousPackageEnquiry = () => {
     setError("");
 
     try {
-      // ── POST to backend — no login needed ───────────────────────────────────
       const res = await fetch(`${BASE}/famous-bookings`, {
         method:  "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           customer:        form.name,
           phone:           form.phone,
+          email:           form.email,       // ← sent to backend for email
           address:         form.address,
           pickupLocation:  form.pickupLocation,
           numberOfPersons: form.numberOfPersons,
@@ -107,7 +108,7 @@ const FamousPackageEnquiry = () => {
       }
 
       alert(
-        `✅ Famous Package Booked!\n\nPackage: 5 Days Round Trip\nTravel: ${form.travelDate} at ${form.travelTime}\nReturn: ${form.returnDate}\nVehicle: ${selectedVehicle.name}\nTotal: ₹${totalAmount.toLocaleString()}\n\nThank you, ${form.name}!\nBooking ID: ${data.booking?.bookingId || ""}`
+        `✅ Famous Package Booked!\n\nPackage: 5 Days Round Trip\nTravel: ${form.travelDate} at ${form.travelTime}\nReturn: ${form.returnDate}\nVehicle: ${selectedVehicle.name}\nTotal: ₹${totalAmount.toLocaleString()}\n\nThank you, ${form.name}!\nBooking ID: ${data.booking?.bookingId || ""}\n\n${form.email ? "Confirmation details sent to your email." : ""}`
       );
 
       navigate("/packages");
@@ -223,15 +224,24 @@ const FamousPackageEnquiry = () => {
                 <input type="tel" name="phone" placeholder="+91 XXXXX XXXXX"
                   value={form.phone} onChange={handleChange} required />
               </div>
+              {/* ── EMAIL FIELD (new) ── */}
               <div className="fpe-field">
-                <label>Pickup Location <span className="req">*</span></label>
-                <input type="text" name="pickupLocation" placeholder="Where to pick you up"
-                  value={form.pickupLocation} onChange={handleChange} required />
+                <label>
+                  Email&nbsp;
+                  <span style={{ fontSize:"0.75rem", color:"#888" }}>(for booking confirmation)</span>
+                </label>
+                <input type="email" name="email" placeholder="you@email.com"
+                  value={form.email} onChange={handleChange} />
               </div>
               <div className="fpe-field">
                 <label>No. of Persons <span className="req">*</span></label>
                 <input type="number" name="numberOfPersons" placeholder="e.g. 4"
                   value={form.numberOfPersons} onChange={handleChange} min="1" required />
+              </div>
+              <div className="fpe-field">
+                <label>Pickup Location <span className="req">*</span></label>
+                <input type="text" name="pickupLocation" placeholder="Where to pick you up"
+                  value={form.pickupLocation} onChange={handleChange} required />
               </div>
             </div>
             <div className="fpe-field">
