@@ -15,6 +15,7 @@ import VechilesBooking from"./pages/VehiclesBooking";
 import Auth from "./pages/Auth";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminRoute from "./routes/AdminRoute";
+import UserRoute  from "./routes/UserRoute";
 import UserDashboard from "./pages/UserDashboard";
 const App = () => {
   const location = useLocation();
@@ -51,8 +52,12 @@ const App = () => {
             </AdminRoute>
           }
         />
-        {/*user*/}
-        <Route path="/dashboard" element={<UserDashboard />} />
+         {/* ── USER DASHBOARD — stays on refresh ── */}
+        <Route path="/dashboard" element={
+          <UserRoute>
+            <UserDashboard />
+          </UserRoute>
+        } />
       </Routes>
 
       {!hideLayout && <Footer />}

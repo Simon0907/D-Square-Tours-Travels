@@ -2,15 +2,11 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../css/Auth.css";
 
-// ─── ADMIN CREDENTIALS — change these to whatever you want ───────────────────
-const ADMIN_EMAIL    = "admin@dsquare.com";
-const ADMIN_PASSWORD = "Admin@123";
-// ─────────────────────────────────────────────────────────────────────────────
-
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
-  const [form, setForm] = useState({ name: "", email: "", password: "" });
-  const [error, setError] = useState("");
+  const [form, setForm]       = useState({ name: "", email: "", password: "" });
+  const [error, setError]     = useState("");
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
 
@@ -22,53 +18,54 @@ const Auth = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setLoading(true);
 
-
-
-    // ── REAL API CALLS — uncomment this when backend is ready ─────────────────
-     const url = isLogin
-       ? "http://localhost:5000/api/auth/login"
+    const url = isLogin
+      ? "http://localhost:5000/api/auth/login"
       : "http://localhost:5000/api/auth/register";
 
-     const payload = isLogin
+    const payload = isLogin
       ? { email: form.email, password: form.password }
-       : form;
+      : form;
 
-     try {
-       const response = await fetch(url, {
-         method: "POST",
-         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+    try {
+      const response = await fetch(url, {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify(payload),
       });
 
       const data = await response.json();
 
-     if (!response.ok) {
-         setError(data.message || "Something went wrong");
-         return;
-       }
+      if (!response.ok) {
+        setError(data.message || "Invalid email or password.");
+        return;
+      }
 
-       if (isLogin) {
-         localStorage.setItem("token", data.token);
-        localStorage.setItem("user", JSON.stringify(data.user));
-         window.dispatchEvent(new Event("storage"));
+      if (isLogin) {
+        // ── Save auth data ──────────────────────────────────────────────────
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("user",  JSON.stringify(data.user));
+        window.dispatchEvent(new Event("storage"));
 
+        // ── Route based on role ─────────────────────────────────────────────
         if (data.user.role === "admin") {
-           localStorage.setItem("adminAuth", "true");
-           navigate("/admin");
+          localStorage.setItem("adminAuth", "true");
+          navigate("/admin", { replace: true });
         } else {
-           navigate("/dashboard");
+          navigate("/dashboard", { replace: true });
         }
       } else {
         alert("Signup successful! Please login.");
         setIsLogin(true);
         setForm({ name: "", email: "", password: "" });
-       }
+      }
     } catch (err) {
-       console.error("Auth error:", err);
-       setError("Server error. Please try again.");
+      console.error("Auth error:", err);
+      setError("Cannot connect to server. Make sure backend is running.");
+    } finally {
+      setLoading(false);
     }
-    // ── END REAL API ──────────────────────────────────────────────────────────
   };
 
   return (
@@ -93,74 +90,45 @@ const Auth = () => {
 
         <form onSubmit={handleSubmit} className="auth-form">
 
-          {/* Name — signup only */}
           <div className={`input-group ${!isLogin ? "visible" : "hidden"}`}>
-            <input
-              type="text"
-              name="name"
-              placeholder="Full Name"
-              value={form.name}
-              onChange={handleChange}
-              required={!isLogin}
-              className="auth-input"
-            />
+            <input type="text" name="name" placeholder="Full Name"
+              value={form.name} onChange={handleChange}
+              required={!isLogin} className="auth-input" />
             <span className="input-border"></span>
           </div>
 
-          {/* Email */}
           <div className="input-group visible">
-            <input
-              type="email"
-              name="email"
-              placeholder="Email Address"
-              value={form.email}
-              onChange={handleChange}
-              required
-              className="auth-input"
-            />
+            <input type="email" name="email" placeholder="Email Address"
+              value={form.email} onChange={handleChange}
+              required className="auth-input" />
             <span className="input-border"></span>
           </div>
 
-          {/* Password */}
           <div className="input-group visible">
-            <input
-              type="password"
-              name="password"
-              placeholder="Password"
-              value={form.password}
-              onChange={handleChange}
-              required
-              className="auth-input"
-            />
+            <input type="password" name="password" placeholder="Password"
+              value={form.password} onChange={handleChange}
+              required className="auth-input" />
             <span className="input-border"></span>
           </div>
 
-          {/* Error message */}
-          {error && (
-            <div className="auth-error-msg">{error}</div>
-          )}
+          {error && <div className="auth-error-msg">{error}</div>}
 
-          <button type="submit" className="auth-button">
+          <button type="submit" className="auth-button" disabled={loading}>
             <span className="button-text">
-              {isLogin ? "Sign In" : "Create Account"}
+              {loading ? "Please wait..." : isLogin ? "Sign In" : "Create Account"}
             </span>
             <span className="button-shine"></span>
           </button>
         </form>
 
-        <div className="auth-divider">
-          <span>or</span>
-        </div>
+        <div className="auth-divider"><span>or</span></div>
 
-        <button
-          type="button"
+        <button type="button" className="toggle-button"
           onClick={() => {
             setIsLogin(!isLogin);
             setForm({ name: "", email: "", password: "" });
             setError("");
-          }}
-          className="toggle-button"
-        >
+          }}>
           {isLogin
             ? "Don't have an account? Sign Up"
             : "Already have an account? Sign In"}
