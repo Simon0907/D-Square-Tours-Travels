@@ -30,15 +30,9 @@ const FamousPackageEnquiry = () => {
   const [submitting,      setSubmitting]      = useState(false);
 
   const [form, setForm] = useState({
-    name:            "",
-    phone:           "",
-    email:           "",        // ← email for confirmation mail
-    pickupLocation:  "",
-    numberOfPersons: "",
-    address:         "",
-    travelDate:      "",
-    travelTime:      "",
-    returnDate:      "",
+    name: "", phone: "", email: "", pickupLocation: "",
+    numberOfPersons: "", address: "",
+    travelDate: "", travelTime: "", returnDate: "",
   });
 
   const [error, setError] = useState("");
@@ -63,6 +57,17 @@ const FamousPackageEnquiry = () => {
     ? new Date(new Date(form.travelDate).getTime() + 86400000).toISOString().split("T")[0]
     : today;
 
+  // ── Redirect after booking based on login status ──────────────────────────
+  const redirectAfterBooking = () => {
+    const token = localStorage.getItem("token");
+    const user  = JSON.parse(localStorage.getItem("user") || "{}");
+    if (token && user?._id && user?.role !== "admin") {
+      navigate("/dashboard", { replace: true });
+    } else {
+      navigate("/", { replace: true });
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -83,7 +88,7 @@ const FamousPackageEnquiry = () => {
         body: JSON.stringify({
           customer:        form.name,
           phone:           form.phone,
-          email:           form.email,       // ← sent to backend for email
+          email:           form.email,
           address:         form.address,
           pickupLocation:  form.pickupLocation,
           numberOfPersons: form.numberOfPersons,
@@ -108,10 +113,10 @@ const FamousPackageEnquiry = () => {
       }
 
       alert(
-        `✅ Famous Package Booked!\n\nPackage: 5 Days Round Trip\nTravel: ${form.travelDate} at ${form.travelTime}\nReturn: ${form.returnDate}\nVehicle: ${selectedVehicle.name}\nTotal: ₹${totalAmount.toLocaleString()}\n\nThank you, ${form.name}!\nBooking ID: ${data.booking?.bookingId || ""}\n\n${form.email ? "Confirmation details sent to your email." : ""}`
+        `✅ Famous Package Booked!\n\nPackage: 5 Days Round Trip\nTravel: ${form.travelDate} at ${form.travelTime}\nReturn: ${form.returnDate}\nVehicle: ${selectedVehicle.name}\nTotal: ₹${totalAmount.toLocaleString()}\n\nThank you, ${form.name}!\nBooking ID: ${data.booking?.bookingId || ""}${form.email ? "\n\nConfirmation sent to your email." : ""}`
       );
 
-      navigate("/packages");
+      redirectAfterBooking();
     } catch (err) {
       console.error(err);
       setError("Server error. Please try again.");
@@ -224,11 +229,10 @@ const FamousPackageEnquiry = () => {
                 <input type="tel" name="phone" placeholder="+91 XXXXX XXXXX"
                   value={form.phone} onChange={handleChange} required />
               </div>
-              {/* ── EMAIL FIELD (new) ── */}
               <div className="fpe-field">
                 <label>
                   Email&nbsp;
-                  <span style={{ fontSize:"0.75rem", color:"#888" }}>(for booking confirmation)</span>
+                  <span style={{ fontSize:"0.75rem", color:"#888" }}>(for confirmation)</span>
                 </label>
                 <input type="email" name="email" placeholder="you@email.com"
                   value={form.email} onChange={handleChange} />

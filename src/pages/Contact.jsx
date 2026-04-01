@@ -3,8 +3,6 @@ import '../css/Contact.css';
 const Contact = () => {
   return (
     <>
-      
-
       <section className="contact-section">
         <div className="section-header">
           <h1 className="section-title">Contact Us</h1>
@@ -22,7 +20,7 @@ const Contact = () => {
 
             <InfoItem
               title="Address"
-              text="158, Muniyandipuram 1st,Pasumalai,Madurai-625004, Tamilnadu, India."
+              text="158, Muniyandipuram 1st, Pasumalai, Madurai-625004, Tamilnadu, India."
               icon="📍"
             />
             <InfoItem
@@ -60,12 +58,17 @@ const Contact = () => {
             </div>
 
             <div className="cta-buttons">
-              <a href="tel:+9186808 68173" className="cta-btn call-btn">
+              {/* ── Call Now — opens phone dialer ── */}
+              <a
+                href="tel:+918680868173"
+                className="cta-btn call-btn"
+              >
                 📞 Call Now
               </a>
 
+              {/* ── WhatsApp — opens WhatsApp app/web ── */}
               <a
-                href="https://wa.me/86808 68173"
+                href="https://wa.me/918680868173"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="cta-btn whatsapp-btn"
