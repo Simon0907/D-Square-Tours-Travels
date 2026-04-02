@@ -3,6 +3,7 @@ const router  = express.Router();
 const jwt     = require("jsonwebtoken");
 const User    = require("../models/User");
 const { protect } = require("../middleware/auth");
+const { sendNewCustomerAlert } = require("../config/email");
 
 // ── Generate JWT ────────────────────────────────────────────────────────────
 const generateToken = (id) =>
@@ -26,6 +27,9 @@ router.post("/register", async (req, res) => {
     }
 
     const user = await User.create({ name, email, password });
+
+    // Notify admin of new customer
+    sendNewCustomerAlert({ name, email }).catch(()=>{});
 
     res.status(201).json({
       message: "Registration successful",

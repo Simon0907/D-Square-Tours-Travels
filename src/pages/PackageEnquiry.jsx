@@ -11,24 +11,17 @@ const PackageEnquiry = () => {
   const packageData = location.state?.packageData;
 
   const [formData, setFormData] = useState({
-    name:            "",
-    address:         "",
-    phoneNumber:     "",
-    email:           "",           // ← added so confirmation email can be sent
-    pickupLocation:  "",
-    noOfPersons:     "",
+    name: "", address: "", phoneNumber: "", email: "",
+    pickupLocation: "", noOfPersons: "",
     selectedPackage: packageData?.title || "",
-    travelDate:      "",
-    travelTime:      "",
-    returnDate:      "",
+    travelDate: "", travelTime: "", returnDate: "",
   });
 
   const [error,      setError]      = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   const minReturn = formData.travelDate
-    ? new Date(new Date(formData.travelDate).getTime() + 86400000)
-        .toISOString().split("T")[0]
+    ? new Date(new Date(formData.travelDate).getTime() + 86400000).toISOString().split("T")[0]
     : today;
 
   const handleChange = (e) => {
@@ -37,10 +30,18 @@ const PackageEnquiry = () => {
   };
 
   const fmt = (d) =>
-    d ? new Date(d).toLocaleDateString("en-IN", {
-          day: "numeric", month: "short", year: "numeric",
-        })
-      : "";
+    d ? new Date(d).toLocaleDateString("en-IN", { day:"numeric", month:"short", year:"numeric" }) : "";
+
+  // ── Redirect after booking based on login status ──────────────────────────
+  const redirectAfterBooking = () => {
+    const token = localStorage.getItem("token");
+    const user  = JSON.parse(localStorage.getItem("user") || "{}");
+    if (token && user?._id && user?.role !== "admin") {
+      navigate("/dashboard", { replace: true });
+    } else {
+      navigate("/", { replace: true });
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -58,7 +59,6 @@ const PackageEnquiry = () => {
     setError("");
 
     try {
-      // ── POST to backend — no login needed ───────────────────────────────────
       const res = await fetch(`${BASE}/enquiries`, {
         method:  "POST",
         headers: { "Content-Type": "application/json" },
@@ -73,10 +73,10 @@ const PackageEnquiry = () => {
       }
 
       alert(
-        `✅ Enquiry Submitted!\n\nPackage: ${formData.selectedPackage}\nTravel: ${formData.travelDate} at ${formData.travelTime}\nReturn: ${formData.returnDate}\n\nWe will contact you soon, ${formData.name}!\nReference: ${data.enquiry?.enquiryId || ""}`
+        `✅ Enquiry Submitted!\n\nPackage: ${formData.selectedPackage}\nTravel: ${formData.travelDate} at ${formData.travelTime}\nReturn: ${formData.returnDate}\n\nWe will contact you soon, ${formData.name}!\nReference: ${data.enquiry?.enquiryId || ""}${formData.email ? "\n\nConfirmation sent to your email." : ""}`
       );
 
-      navigate("/packages");
+      redirectAfterBooking();
     } catch (err) {
       console.error(err);
       setError("Server error. Please try again.");

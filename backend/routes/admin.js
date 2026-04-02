@@ -7,6 +7,7 @@ const PackageEnquiry  = require("../models/PackageEnquiry");
 const VehicleBooking  = require("../models/VehicleBooking");
 const Contact         = require("../models/Contact");
 const { protect, adminOnly } = require("../middleware/auth");
+const { sendAdminConfirmedEmail, row } = require("../config/email");
 
 // All admin routes require auth + admin role
 router.use(protect, adminOnly);
@@ -114,18 +115,16 @@ router.get("/messages", async (req, res) => {
 });
 
 // ── PATCH /api/admin/bookings/:id/status ────────────────────────────────────
-// Update status for any booking type
 router.patch("/bookings/:id/status", async (req, res) => {
   try {
     const { id }     = req.params;
-    const { status, type } = req.body;
+    const { status } = req.body;
 
     if (!["pending", "confirmed", "cancelled"].includes(status)) {
       return res.status(400).json({ message: "Invalid status." });
     }
 
     let booking;
-    // Try all booking models
     booking = await TourBooking.findByIdAndUpdate(id, { status }, { new: true });
     if (!booking) booking = await FamousBooking.findByIdAndUpdate(id, { status }, { new: true });
     if (!booking) booking = await VehicleBooking.findByIdAndUpdate(id, { status }, { new: true });
@@ -133,8 +132,33 @@ router.patch("/bookings/:id/status", async (req, res) => {
 
     if (!booking) return res.status(404).json({ message: "Booking not found." });
 
+    // ── Send confirmation email to customer when admin confirms ───────────────
+    if (status === "confirmed" && booking.email) {
+      const isVehicle  = !!booking.vehicleName;
+      const isFamous   = !!booking.route;
+      const isEnquiry  = !!booking.packageTitle && !booking.vehicle && !booking.vehicleName;
+
+      let emailDetails = "";
+      if (isVehicle) {
+        emailDetails = row("Vehicle", booking.vehicleName) + row("Trip Type", booking.tripType) + row("Travel Date", new Date(booking.travelDate).toLocaleDateString("en-IN")) + row("Pickup Time", booking.travelTime) + row("Pickup", booking.pickupLocation);
+      } else if (isFamous) {
+        emailDetails = row("Package", "5 Days Round Trip") + row("Route", booking.route) + row("Vehicle", booking.vehicle) + row("Travel Date", new Date(booking.travelDate).toLocaleDateString("en-IN")) + row("Pickup Time", booking.travelTime) + row("Return Date", new Date(booking.returnDate).toLocaleDateString("en-IN")) + row("Amount", "₹" + Number(booking.amount||0).toLocaleString());
+      } else {
+        emailDetails = row("Package", booking.packageTitle) + row("Travel Date", new Date(booking.travelDate).toLocaleDateString("en-IN")) + row("Return Date", booking.returnDate ? new Date(booking.returnDate).toLocaleDateString("en-IN") : "—") + row("Vehicle", booking.vehicle || "—") + row("Pickup", booking.pickupLocation) + row("Amount", "₹" + Number(booking.amount||0).toLocaleString());
+      }
+
+      sendAdminConfirmedEmail({
+        to:        booking.email,
+        name:      booking.customer,
+        type:      isVehicle ? "Vehicle Booking" : isFamous ? "Famous Package" : "Tour Package",
+        details:   emailDetails,
+        bookingId: booking.bookingId || booking.enquiryId || booking._id,
+      }).catch(() => {});
+    }
+
     res.json({ message: `Status updated to ${status}`, booking });
   } catch (error) {
+    console.error("Status update error:", error);
     res.status(500).json({ message: "Failed to update status." });
   }
 });

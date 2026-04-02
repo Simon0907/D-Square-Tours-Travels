@@ -11,26 +11,17 @@ const VehiclesBooking = () => {
   const vehicle   = location.state?.vehicle;
 
   const [formData, setFormData] = useState({
-    name:           "",
-    phone:          "",
-    email:          "",
-    address:        "",
-    pickupLocation: "",
-    dropLocation:   "",
-    noOfPersons:    "",
-    travelDate:     "",
-    travelTime:     "",
-    returnDate:     "",
-    tripType:       "One Way",
-    specialRequest: "",
+    name: "", phone: "", email: "", address: "",
+    pickupLocation: "", dropLocation: "", noOfPersons: "",
+    travelDate: "", travelTime: "", returnDate: "",
+    tripType: "One Way", specialRequest: "",
   });
 
   const [error,      setError]      = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   const minReturn = formData.travelDate
-    ? new Date(new Date(formData.travelDate).getTime() + 86400000)
-        .toISOString().split("T")[0]
+    ? new Date(new Date(formData.travelDate).getTime() + 86400000).toISOString().split("T")[0]
     : today;
 
   const handleChange = (e) => {
@@ -39,10 +30,18 @@ const VehiclesBooking = () => {
   };
 
   const fmt = (d) =>
-    d ? new Date(d).toLocaleDateString("en-IN", {
-          day: "numeric", month: "short", year: "numeric",
-        })
-      : "";
+    d ? new Date(d).toLocaleDateString("en-IN", { day:"numeric", month:"short", year:"numeric" }) : "";
+
+  // ── Redirect after booking based on login status ──────────────────────────
+  const redirectAfterBooking = () => {
+    const token = localStorage.getItem("token");
+    const user  = JSON.parse(localStorage.getItem("user") || "{}");
+    if (token && user?._id && user?.role !== "admin") {
+      navigate("/dashboard", { replace: true });
+    } else {
+      navigate("/", { replace: true });
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -60,11 +59,10 @@ const VehiclesBooking = () => {
     setError("");
 
     try {
-      // ── POST to backend — no login needed ───────────────────────────────────
       const res = await fetch(`${BASE}/vehicle-bookings`, {
         method:  "POST",
         headers: { "Content-Type": "application/json" },
-        body:    JSON.stringify({
+        body: JSON.stringify({
           name:           formData.name,
           phone:          formData.phone,
           email:          formData.email,
@@ -94,10 +92,10 @@ const VehiclesBooking = () => {
       }
 
       alert(
-        `✅ Vehicle Booked!\n\nVehicle: ${vehicle?.name}\nTrip: ${formData.tripType}\nTravel: ${formData.travelDate} at ${formData.travelTime}${formData.returnDate ? `\nReturn: ${formData.returnDate}` : ""}\n\nThank you, ${formData.name}!\nBooking ID: ${data.booking?.bookingId || ""}`
+        `✅ Vehicle Booked!\n\nVehicle: ${vehicle?.name}\nTrip: ${formData.tripType}\nTravel: ${formData.travelDate} at ${formData.travelTime}${formData.returnDate ? `\nReturn: ${formData.returnDate}` : ""}\n\nThank you, ${formData.name}!\nBooking ID: ${data.booking?.bookingId || ""}${formData.email ? "\n\nConfirmation sent to your email." : ""}`
       );
 
-      navigate("/ourvehicles");
+      redirectAfterBooking();
     } catch (err) {
       console.error(err);
       setError("Server error. Please try again.");
