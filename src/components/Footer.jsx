@@ -16,7 +16,7 @@ const Footer = () => {
             vibrant markets.
           </p>
           <p style={text}>
-            With Vismi Cabs, you get a comfortable, reliable, and enriching
+            With D Square, you get a comfortable, reliable, and enriching
             travel experience wherever you go.
           </p>
         </div>
