@@ -20,9 +20,10 @@ const Auth = () => {
     setError("");
     setLoading(true);
 
-    const url = isLogin
-      ? "http://localhost:5000/api/auth/login"
-      : "http://localhost:5000/api/auth/register";
+// To this:
+const url = isLogin
+  ? "https://d-square-tours-travels.onrender.com/api/auth/login"
+  : "https://d-square-tours-travels.onrender.com/api/auth/register";
 
     const payload = isLogin
       ? { email: form.email, password: form.password }

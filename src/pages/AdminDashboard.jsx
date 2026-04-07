@@ -6,7 +6,7 @@ import {
 } from "lucide-react";
 
 // ─── API BASE ─────────────────────────────────────────────────────────────────
-const BASE = "http://localhost:5000/api";
+const BASE = "https://d-square-tours-travels.onrender.com/api";
 
 const authHeaders = () => ({
   "Content-Type": "application/json",

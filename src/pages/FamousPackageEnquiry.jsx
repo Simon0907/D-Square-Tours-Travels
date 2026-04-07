@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../css/FamousPackageEnquiry.css";
 
-const BASE = "http://localhost:5000/api";
+const BASE = "https://d-square-tours-travels.onrender.com/api";
 
 const vehicles = [
   { name: "Mini",          rent: 1300, kmRate: 8  },

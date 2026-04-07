@@ -6,7 +6,7 @@ import "../css/UserDashboard.css";
 import TourPackages from "../pages/TourPackages";   // your Packages page
 import OurVehicles  from "../pages/OurVehicles";    // your OurVehicles page
 
-const BASE = "http://localhost:5000/api";
+const BASE = "https://d-square-tours-travels.onrender.com/api";
 
 const authHeaders = (token) => ({
   "Content-Type": "application/json",

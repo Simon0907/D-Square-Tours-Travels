@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import "../css/PackageEnquiry.css";
 
-const BASE  = "http://localhost:5000/api";
+const BASE = "https://d-square-tours-travels.onrender.com/api";
 const today = new Date().toISOString().split("T")[0];
 
 const PackageEnquiry = () => {
